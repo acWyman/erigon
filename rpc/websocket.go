@@ -55,7 +55,8 @@ func (s *Server) WebsocketHandler(allowedOrigins []string, jwtSecret []byte, com
 		CheckOrigin:       wsHandshakeValidator(allowedOrigins),
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info("websocketHandler - 1")
+		s.logId = randomIDGenerator()()
+		log.Info(fmt.Sprintf("[websocket] in websocketHandler - %v", s.logId))
 		if jwtSecret != nil && !CheckJwtSecret(w, r, jwtSecret) {
 			return
 		}
@@ -252,7 +253,7 @@ func newWebsocketCodec(conn *websocket.Conn) ServerCodec {
 		conn:      conn,
 		pingReset: make(chan struct{}, 1),
 	}
-	log.Info(fmt.Sprintf("%+v", wc.jsonCodec))
+	log.Info(fmt.Sprintf("[websocket] codec: %+v", wc.jsonCodec))
 	wc.wg.Add(1)
 	go wc.pingLoop()
 	return wc
@@ -291,12 +292,12 @@ func (wc *websocketCodec) pingLoop() {
 			}
 			timer.Reset(wsPingInterval)
 		case <-timer.C:
-			log.Info("websocketCodec pingLoop: in")
+			log.Info("[[websocket]] pingLoop: in")
 			wc.jsonCodec.encMu.Lock()
 			wc.conn.SetWriteDeadline(time.Now().Add(wsPingWriteTimeout)) //nolint:errcheck
 			wc.conn.WriteMessage(websocket.PingMessage, nil)             //nolint:errcheck
 			wc.jsonCodec.encMu.Unlock()
-			log.Info("websocketCodec pingLoop: out")
+			log.Info("[websocket] pingLoop: out")
 			timer.Reset(wsPingInterval)
 		}
 	}

@@ -43,6 +43,7 @@ const (
 
 // Server is an RPC server.
 type Server struct {
+	logId           ID
 	services        serviceRegistry
 	methodAllowList AllowList
 	idgen           func() ID
