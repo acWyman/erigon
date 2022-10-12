@@ -67,6 +67,7 @@ func (s *Server) WebsocketHandler(allowedOrigins []string, jwtSecret []byte, com
 		}
 		codec := newWebsocketCodec(conn)
 		s.ServeCodec(codec, 0)
+		log.Info(fmt.Sprintf("[websocket] out websocketHandler - %v", s.logId))
 	})
 }
 
@@ -292,7 +293,7 @@ func (wc *websocketCodec) pingLoop() {
 			}
 			timer.Reset(wsPingInterval)
 		case <-timer.C:
-			log.Info("[[websocket]] pingLoop: in")
+			log.Info("[websocket] pingLoop: in")
 			wc.jsonCodec.encMu.Lock()
 			wc.conn.SetWriteDeadline(time.Now().Add(wsPingWriteTimeout)) //nolint:errcheck
 			wc.conn.WriteMessage(websocket.PingMessage, nil)             //nolint:errcheck
