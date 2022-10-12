@@ -66,6 +66,7 @@ func (s *Server) WebsocketHandler(allowedOrigins []string, jwtSecret []byte, com
 			return
 		}
 		codec := newWebsocketCodec(conn)
+		log.Info(fmt.Sprintf("[websocket] finish construct websocketHandler - %v", s.logId))
 		s.ServeCodec(codec, 0)
 		log.Info(fmt.Sprintf("[websocket] out websocketHandler - %v", s.logId))
 	})
