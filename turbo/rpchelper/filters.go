@@ -522,6 +522,7 @@ func (ff *Filters) OnNewEvent(event *remote.SubscribeReply) {
 func (ff *Filters) OnNewTx(reply *txpool.OnAddReply) {
 	ff.mu.RLock()
 	defer ff.mu.RUnlock()
+	log.Info("!!in OnNewTx!!")
 
 	txs := make([]types.Transaction, len(reply.RplTxs))
 	for i, rlpTx := range reply.RplTxs {
@@ -537,9 +538,11 @@ func (ff *Filters) OnNewTx(reply *txpool.OnAddReply) {
 			break
 		}
 	}
+	log.Info("pendingTxsSubs cnt: %v; new Txs: %+v", len(ff.pendingTxsSubs), txs)
 	for _, v := range ff.pendingTxsSubs {
 		v <- txs
 	}
+	log.Info("!!out onNewTx!!")
 }
 
 func (ff *Filters) OnNewLogs(reply *remote.SubscribeLogsReply) {
