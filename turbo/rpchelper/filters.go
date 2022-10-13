@@ -361,7 +361,13 @@ func (ff *Filters) SubscribePendingTxs(out chan []types.Transaction) PendingTxsS
 	return id
 }
 
-func (ff *Filters) UnsubscribePendingTxs(id PendingTxsSubID, txsCh chan []types.Transaction) bool {
+func (ff *Filters) UnsubscribePendingTxs(id PendingTxsSubID) bool {
+	ff.mu.RLock()
+	txsCh, ok := ff.pendingTxsSubs[id]
+	ff.mu.RUnlock()
+	if !ok {
+		return false
+	}
 	for {
 		select {
 		case <-txsCh:

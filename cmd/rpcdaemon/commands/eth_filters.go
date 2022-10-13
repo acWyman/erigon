@@ -192,7 +192,7 @@ func (api *APIImpl) NewPendingTransactions(ctx context.Context) (*rpc.Subscripti
 				}
 			case err := <-rpcSub.Err():
 				log.Error(fmt.Sprintf("[websocket] fuck erigon, %v", err))
-				api.filters.UnsubscribePendingTxs(id, txsCh)
+				api.filters.UnsubscribePendingTxs(id)
 				return
 			}
 		}
@@ -217,7 +217,7 @@ func (api *APIImpl) Logs(ctx context.Context, crit filters.FilterCriteria) (*rpc
 		defer debug.LogPanic()
 		logs := make(chan *types.Log, 1)
 		id := api.filters.SubscribeLogs(logs, crit)
-		defer api.filters.UnsubscribeLogs(id, txsCh)
+		defer api.filters.UnsubscribeLogs(id)
 		for {
 			select {
 			case h, ok := <-logs:
