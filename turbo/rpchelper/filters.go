@@ -361,20 +361,21 @@ func (ff *Filters) SubscribePendingTxs(out chan []types.Transaction) PendingTxsS
 	return id
 }
 
-func (ff *Filters) UnsubscribePendingTxs(id PendingTxsSubID) bool {
-	if ch, ok := ff.pendingTxsSubs[id]; ok {
-		close(ch)
-
-		ff.mu.Lock()
-		delete(ff.pendingTxsSubs, id)
-		ff.mu.Unlock()
-
-		ff.storeMu.Lock()
-		delete(ff.pendingTxsStores, id)
-		ff.storeMu.Unlock()
-		return true
+func (ff *Filters) UnsubscribePendingTxs(id PendingTxsSubID, txsCh chan []types.Transaction) bool {
+	for {
+		select {
+		case <-txsCh:
+		default:
+			if ok := ff.mu.TryLock(); ok {
+				close(txsCh)
+				delete(ff.pendingTxsSubs, id)
+				ff.storeMu.Lock()
+				delete(ff.pendingTxsStores, id)
+				ff.mu.Unlock()
+				return true
+			}
+		}
 	}
-	return false
 }
 
 func (ff *Filters) SubscribeLogs(out chan *types.Log, crit filters.FilterCriteria) LogsSubID {
