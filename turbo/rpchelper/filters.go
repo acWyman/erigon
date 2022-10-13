@@ -362,6 +362,7 @@ func (ff *Filters) SubscribePendingTxs(out chan []types.Transaction) PendingTxsS
 }
 
 func (ff *Filters) UnsubscribePendingTxs(id PendingTxsSubID) bool {
+	log.Info("[filters] fucking")
 	ff.mu.RLock()
 	txsCh, ok := ff.pendingTxsSubs[id]
 	ff.mu.RUnlock()
