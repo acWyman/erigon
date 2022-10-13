@@ -372,7 +372,9 @@ func (ff *Filters) UnsubscribePendingTxs(id PendingTxsSubID) bool {
 	for {
 		select {
 		case <-txsCh:
+			log.Info("[filters] fake fuck")
 		default:
+			log.Info("[filters] real fuck")
 			if ok := ff.mu.TryLock(); ok {
 				close(txsCh)
 				delete(ff.pendingTxsSubs, id)
