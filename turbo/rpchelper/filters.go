@@ -362,8 +362,14 @@ func (ff *Filters) SubscribePendingTxs(out chan []types.Transaction) PendingTxsS
 }
 
 func (ff *Filters) UnsubscribePendingTxs(id PendingTxsSubID) bool {
-	ff.mu.Lock()
-	defer ff.mu.Unlock()
+	func() {
+		ff.mu.RLock()
+		log.Info("[ffmu] UnsubscribePendingTxs lock")
+	}()
+	defer func() {
+		ff.mu.RUnlock()
+		log.Info("[ffmu] UnsubscribePendingTxs Unlock")
+	}()
 	if ch, ok := ff.pendingTxsSubs[id]; ok {
 		close(ch)
 		delete(ff.pendingTxsSubs, id)
@@ -520,9 +526,14 @@ func (ff *Filters) OnNewEvent(event *remote.SubscribeReply) {
 }
 
 func (ff *Filters) OnNewTx(reply *txpool.OnAddReply) {
-	ff.mu.RLock()
-	defer ff.mu.RUnlock()
-	log.Info("[filters] in OnNewTx")
+	func() {
+		ff.mu.RLock()
+		log.Info("[ffmu] onNewTx R-lock")
+	}()
+	defer func() {
+		ff.mu.RUnlock()
+		log.Info("[ffmu] onNewTx R-Unlock")
+	}()
 
 	txs := make([]types.Transaction, len(reply.RplTxs))
 	for i, rlpTx := range reply.RplTxs {
@@ -538,7 +549,7 @@ func (ff *Filters) OnNewTx(reply *txpool.OnAddReply) {
 			break
 		}
 	}
-	log.Info(fmt.Sprintf("[filters] pendingTxsSubs cnt: %v; new Txs: %+v", len(ff.pendingTxsSubs), txs))
+	log.Info(fmt.Sprintf("[filters] pendingTxsSubs cnt: %v; new Txs: %+v", len(ff.pendingTxsSubs), len(txs)))
 	for _, v := range ff.pendingTxsSubs {
 		log.Info("[filters-channel] - sending")
 		v <- txs
