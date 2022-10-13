@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ledgerwatch/erigon/common/debug"
 	"github.com/ledgerwatch/erigon/common/hexutil"
@@ -190,7 +191,7 @@ func (api *APIImpl) NewPendingTransactions(ctx context.Context) (*rpc.Subscripti
 					return
 				}
 			case err := <-rpcSub.Err():
-				log.Error("[websocket] fuck erigon, ", err)
+				log.Error(fmt.Sprintf("[websocket] fuck erigon, %v", err))
 				api.filters.UnsubscribePendingTxs(id)
 				return
 			}
