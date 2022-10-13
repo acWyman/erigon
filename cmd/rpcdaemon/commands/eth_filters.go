@@ -189,7 +189,8 @@ func (api *APIImpl) NewPendingTransactions(ctx context.Context) (*rpc.Subscripti
 					log.Warn("new pending transactions channel was closed")
 					return
 				}
-			case <-rpcSub.Err():
+			case err := <-rpcSub.Err():
+				log.Error("[websocket] fuck erigon, ", err)
 				api.filters.UnsubscribePendingTxs(id)
 				return
 			}
