@@ -362,20 +362,16 @@ func (ff *Filters) SubscribePendingTxs(out chan []types.Transaction) PendingTxsS
 }
 
 func (ff *Filters) UnsubscribePendingTxs(id PendingTxsSubID) bool {
-	func() {
-		ff.mu.RLock()
-		log.Info("[ffmu] UnsubscribePendingTxs lock")
-	}()
-	defer func() {
-		ff.mu.RUnlock()
-		log.Info("[ffmu] UnsubscribePendingTxs Unlock")
-	}()
 	if ch, ok := ff.pendingTxsSubs[id]; ok {
 		close(ch)
+
+		ff.mu.Lock()
 		delete(ff.pendingTxsSubs, id)
+		ff.mu.Unlock()
+
 		ff.storeMu.Lock()
-		defer ff.storeMu.Unlock()
 		delete(ff.pendingTxsStores, id)
+		ff.storeMu.Unlock()
 		return true
 	}
 	return false
