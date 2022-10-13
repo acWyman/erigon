@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ledgerwatch/erigon/common/debug"
 	"github.com/ledgerwatch/erigon/common/hexutil"
@@ -177,19 +176,13 @@ func (api *APIImpl) NewPendingTransactions(ctx context.Context) (*rpc.Subscripti
 		defer debug.LogPanic()
 		txsCh := make(chan []types.Transaction, 1)
 		id := api.filters.SubscribePendingTxs(txsCh)
-		defer api.filters.UnsubscribePendingTxs(id)
 
 		for {
 			select {
 			case txs, ok := <-txsCh:
 				for _, t := range txs {
 					if t != nil {
-						log.Info(fmt.Sprintf("notify: %v", rpcSub.ID))
-						err := notifier.Notify(rpcSub.ID, t.Hash())
-						if err != nil {
-							log.Warn("error while notifying subscription", "err", err)
-							return
-						}
+						notifier.Notify(rpcSub.ID, t.Hash())
 					}
 				}
 				if !ok {
@@ -197,6 +190,7 @@ func (api *APIImpl) NewPendingTransactions(ctx context.Context) (*rpc.Subscripti
 					return
 				}
 			case <-rpcSub.Err():
+				api.filters.UnsubscribePendingTxs(id)
 				return
 			}
 		}
