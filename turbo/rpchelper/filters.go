@@ -378,6 +378,7 @@ func (ff *Filters) UnsubscribePendingTxs(id PendingTxsSubID) bool {
 				delete(ff.pendingTxsSubs, id)
 				ff.storeMu.Lock()
 				delete(ff.pendingTxsStores, id)
+				ff.storeMu.Unlock()
 				ff.mu.Unlock()
 				return true
 			}
