@@ -177,6 +177,7 @@ func (api *APIImpl) NewPendingTransactions(ctx context.Context) (*rpc.Subscripti
 		defer debug.LogPanic()
 		txsCh := make(chan []types.Transaction, 1)
 		id := api.filters.SubscribePendingTxs(txsCh)
+		defer api.filters.UnsubscribePendingTxs(id)
 
 		for {
 			select {
@@ -192,7 +193,6 @@ func (api *APIImpl) NewPendingTransactions(ctx context.Context) (*rpc.Subscripti
 				}
 			case err := <-rpcSub.Err():
 				log.Error(fmt.Sprintf("[websocket] fuck erigon, %v", err))
-				api.filters.UnsubscribePendingTxs(id)
 				return
 			}
 		}
